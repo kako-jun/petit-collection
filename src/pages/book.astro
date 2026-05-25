@@ -8,22 +8,41 @@ import Base from '@/layouts/Base.astro';
       <h1 id="book-title">Book</h1>
       <a href="/library" class="btn btn-sm">← Library</a>
     </div>
+
+    <!-- Asset picker: library assets available to place -->
+    <div id="asset-picker" class="asset-picker" hidden>
+      <div class="asset-picker-header">
+        <span>Place an asset</span>
+        <button id="picker-close" aria-label="Close picker">✕</button>
+      </div>
+      <div id="picker-grid" class="picker-grid"></div>
+    </div>
+
     <div id="book-container" class="book-container">
       <p class="empty">Loading…</p>
+    </div>
+
+    <div class="book-toolbar">
+      <button id="btn-place" type="button">+ Place sticker</button>
     </div>
   </section>
 </Base>
 
 <script>
-  import { loadBook, addPage } from '@/lib/db';
+  import { loadBook, addPage, loadAssets, saveAssets, saveBook } from '@/lib/db';
   import { renderBook } from '@/lib/book';
-  import type { Book } from '@/lib/types';
+  import { activateStickerPage, placeAsset } from '@/lib/sticker';
+  import type { Asset, Book } from '@/lib/types';
 
   let book: Book | null = null;
+  let assets: Asset[] = [];
   let currentIndex = 0;
+  let cleanupInteractions: (() => void) | null = null;
 
   const container = document.getElementById('book-container')!;
   const titleEl = document.getElementById('book-title')!;
+  const picker = document.getElementById('asset-picker') as HTMLElement;
+  const pickerGrid = document.getElementById('picker-grid')!;
 
   function render() {
     if (!book) {
@@ -32,6 +51,10 @@ import Base from '@/layouts/Base.astro';
       return;
     }
     titleEl.textContent = book.title;
+
+    cleanupInteractions?.();
+    cleanupInteractions = null;
+
     renderBook(
       container,
       book,
@@ -51,10 +74,102 @@ import Base from '@/layouts/Base.astro';
         }
       },
     );
+
+    // Activate sticker interactions on current page
+    const page = book.pages[currentIndex];
+    if (page?.pageType === 'sticker-book' || page?.pageType === 'stamp-book') {
+    const layer = document.getElementById('placement-layer');
+        if (layer) {
+          cleanupInteractions = activateStickerPage(layer, page, book, assets, async (updated) => {
+            book = updated;
+            await saveAssets(assets); // persist ownershipState changes
+            render();
+          });
+        }
+    }
   }
 
+  // --- Asset picker ---
+  function openPicker() {
+    pickerGrid.innerHTML = '';
+    const available = assets.filter((a) => a.ownershipState === 'library');
+
+    if (available.length === 0) {
+      const msg = document.createElement('p');
+      msg.className = 'empty';
+      msg.textContent = 'No available assets in Library.';
+      pickerGrid.appendChild(msg);
+    } else {
+      available.forEach((a) => {
+        const card = document.createElement('div');
+        card.className = 'picker-card';
+        card.dataset.id = a.id;
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', a.title ?? a.id);
+
+        const thumb = document.createElement('div');
+        thumb.className = `asset-thumb ${a.kind} small`;
+        if (a.image) {
+          const img = document.createElement('img');
+          img.src = a.image;
+          img.alt = '';
+          thumb.appendChild(img);
+        } else {
+          thumb.textContent = '?';
+        }
+
+        const label = document.createElement('span');
+        label.className = 'picker-label';
+        label.textContent = a.title ?? a.id;
+
+        card.appendChild(thumb);
+        card.appendChild(label);
+
+        const handler = () => placeFromPicker(a.id);
+        card.addEventListener('click', handler);
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            placeFromPicker(a.id);
+          }
+        });
+
+        pickerGrid.appendChild(card);
+      });
+    }
+    picker.hidden = false;
+  }
+
+  function placeFromPicker(assetId: string) {
+    if (!book) return;
+    const page = book.pages[currentIndex];
+    if (!page) return;
+    const asset = assets.find((a) => a.id === assetId);
+    if (!asset) return;
+
+    // Place near center of surface
+    const surface = container.querySelector('.book-surface') as HTMLElement | null;
+    const cx = surface ? surface.offsetWidth / 2 - 50 : 100;
+    const cy = surface ? surface.offsetHeight / 2 - 50 : 100;
+
+    const ok = placeAsset(asset, page, book, cx, cy);
+    if (!ok) {
+      alert('This asset is already placed somewhere.');
+      return;
+    }
+
+    picker.hidden = true;
+    Promise.all([saveBook(book), saveAssets(assets)]).then(() => render());
+  }
+
+  document.getElementById('btn-place')!.addEventListener('click', openPicker);
+  document.getElementById('picker-close')!.addEventListener('click', () => {
+    picker.hidden = true;
+  });
+
   async function init() {
-    book = await loadBook();
+    [book, assets] = await Promise.all([loadBook(), loadAssets()]);
     render();
   }
 

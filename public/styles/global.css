@@ -365,3 +365,107 @@ button:disabled {
 .detail-fields dd {
   word-break: break-word;
 }
+
+/* --- Sticker interactions --- */
+.placed-asset {
+  box-sizing: border-box;
+}
+
+.placed-asset .peel-btn {
+  display: none;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  line-height: 20px;
+  text-align: center;
+}
+
+.placed-asset:hover .peel-btn,
+.placed-asset:focus-within .peel-btn {
+  display: block;
+}
+
+.placed-asset .asset-thumb {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius);
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.placed-asset .asset-thumb.small,
+.asset-thumb.small {
+  height: 60px;
+  font-size: 1.2rem;
+}
+
+/* --- Asset picker --- */
+.asset-picker {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: white;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.asset-picker[hidden] { display: none; }
+
+.asset-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.picker-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  width: 80px;
+  background: white;
+}
+
+.picker-card:hover,
+.picker-card:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.picker-label {
+  font-size: 0.65rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* --- Book toolbar --- */
+.book-toolbar {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
