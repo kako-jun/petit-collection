@@ -1,8 +1,5 @@
-// Local-first persistence via localforage (IndexedDB backed)
-// All functions are async; data survives page reloads.
-
 import localforage from 'localforage';
-import type { Asset, Book } from './types';
+import type { Asset, Book, Page } from './types';
 
 const store = localforage.createInstance({
   name: 'petit-collection',
@@ -36,11 +33,25 @@ export async function saveBook(book: Book): Promise<void> {
   await store.setItem(BOOK_KEY, book);
 }
 
+/** Add a blank page to the book and persist. */
+export async function addPage(book: Book): Promise<Book> {
+  const newPage: Page = {
+    id: `page-${Date.now()}`,
+    pageType: 'sticker-book',
+    background: '#fffdf6',
+    placements: [],
+    decorations: [],
+  };
+  const updated: Book = { ...book, pages: [...book.pages, newPage] };
+  await saveBook(updated);
+  return updated;
+}
+
 // --- Seed ---
 
 export async function seedLibrary(): Promise<void> {
   const existing = await loadAssets();
-  if (existing.length > 0) return; // don't duplicate
+  if (existing.length > 0) return;
 
   const assets: Asset[] = [
     {
@@ -86,6 +97,13 @@ export async function seedLibrary(): Promise<void> {
         id: 'page-001',
         pageType: 'sticker-book',
         background: '#fffdf6',
+        placements: [],
+        decorations: [],
+      },
+      {
+        id: 'page-002',
+        pageType: 'stamp-book',
+        background: '#f0f4f8',
         placements: [],
         decorations: [],
       },

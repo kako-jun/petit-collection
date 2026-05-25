@@ -4,29 +4,59 @@ import Base from '@/layouts/Base.astro';
 
 <Base title="Book" description="Arrange assets on pages">
   <section class="book">
-    <h1>Book</h1>
-    <p class="subtitle">Place your collection on pages.</p>
-    <div id="book-info" class="book-info">
-      <!-- populated by book.ts -->
+    <div class="book-header">
+      <h1 id="book-title">Book</h1>
+      <a href="/library" class="btn btn-sm">← Library</a>
+    </div>
+    <div id="book-container" class="book-container">
+      <p class="empty">Loading…</p>
     </div>
   </section>
 </Base>
 
 <script>
-  import { loadBook } from '@/lib/db';
+  import { loadBook, addPage } from '@/lib/db';
+  import { renderBook } from '@/lib/book';
+  import type { Book } from '@/lib/types';
 
-  async function refresh() {
-    const book = await loadBook();
-    const el = document.getElementById('book-info')!;
+  let book: Book | null = null;
+  let currentIndex = 0;
+
+  const container = document.getElementById('book-container')!;
+  const titleEl = document.getElementById('book-title')!;
+
+  function render() {
     if (!book) {
-      el.textContent = 'No book yet. Add seed data in the Library first.';
+      container.innerHTML =
+        '<p class="empty">No book yet. <a href="/library">Go to Library</a> and add seed data first.</p>';
       return;
     }
-    el.innerHTML = `
-      <p><strong>${book.title}</strong></p>
-      <p>${book.pages.length} page(s)</p>
-    `;
+    titleEl.textContent = book.title;
+    renderBook(
+      container,
+      book,
+      currentIndex,
+      (idx) => {
+        if (idx < 0 || idx >= book!.pages.length) return;
+        currentIndex = idx;
+        render();
+      },
+      async () => {
+        try {
+          book = await addPage(book!);
+          currentIndex = book.pages.length - 1;
+          render();
+        } catch (e) {
+          console.error('Failed to add page', e);
+        }
+      },
+    );
   }
 
-  refresh();
+  async function init() {
+    book = await loadBook();
+    render();
+  }
+
+  init();
 </script>
