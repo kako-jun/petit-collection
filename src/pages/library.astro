@@ -1,0 +1,120 @@
+---
+import Base from '@/layouts/Base.astro';
+---
+
+<Base title="Library" description="Browse and manage your collected assets">
+  <section class="library">
+    <h1>Library</h1>
+
+    <div class="library-controls">
+      <input id="search" type="search" placeholder="Search title, tag, note…" autocomplete="off" />
+
+      <select id="filter-kind">
+        <option value="all">All kinds</option>
+        <option value="sticker">Sticker</option>
+        <option value="stamp">Stamp</option>
+        <option value="label">Label</option>
+      </select>
+
+      <select id="sort-key">
+        <option value="recent">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="title">Title A–Z</option>
+      </select>
+
+      <span id="asset-count" class="asset-count"></span>
+    </div>
+
+    <div id="library-grid" class="asset-grid"></div>
+
+    <div class="library-actions">
+      <button id="btn-seed" type="button">Add seed data</button>
+      <button id="btn-clear" type="button">Clear all</button>
+    </div>
+  </section>
+
+  <!-- Detail panel (sidebar) -->
+  <aside id="detail-panel" class="detail-panel" hidden aria-label="Asset detail"></aside>
+</Base>
+
+<script>
+  import { seedLibrary, loadAssets, clearAssets } from '@/lib/db';
+  import { filterAndSort, renderAssetGrid, renderDetailPanel } from '@/lib/library';
+  import type { Asset, AssetKind } from '@/lib/types';
+  import type { SortKey } from '@/lib/library';
+
+  const grid = document.getElementById('library-grid')!;
+  const panel = document.getElementById('detail-panel') as HTMLElement;
+  const searchEl = document.getElementById('search') as HTMLInputElement;
+  const filterKindEl = document.getElementById('filter-kind') as HTMLSelectElement;
+  const sortKeyEl = document.getElementById('sort-key') as HTMLSelectElement;
+  const countEl = document.getElementById('asset-count')!;
+
+  let allAssets: Asset[] = [];
+  let selectedId: string | null = null;
+
+  function applyFilters() {
+    const kind = filterKindEl.value as AssetKind | 'all';
+    const sort = sortKeyEl.value as SortKey;
+    const query = searchEl.value;
+    const filtered = filterAndSort(allAssets, kind, sort, query);
+    countEl.textContent = `${filtered.length} / ${allAssets.length}`;
+    renderAssetGrid(grid, filtered);
+    attachCardListeners();
+    // keep detail panel in sync
+    if (selectedId) {
+      const still = filtered.find((a) => a.id === selectedId) ?? null;
+      renderDetailPanel(panel, still);
+      attachCloseListener();
+    }
+  }
+
+  function attachCardListeners() {
+    grid.querySelectorAll<HTMLElement>('.asset-card').forEach((card) => {
+      card.addEventListener('click', () => openDetail(card.dataset.id!));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openDetail(card.dataset.id!);
+        }
+      });
+    });
+  }
+
+  function attachCloseListener() {
+    document.getElementById('detail-close')?.addEventListener('click', () => {
+      selectedId = null;
+      renderDetailPanel(panel, null);
+    });
+  }
+
+  function openDetail(id: string) {
+    selectedId = id;
+    const asset = allAssets.find((a) => a.id === id) ?? null;
+    renderDetailPanel(panel, asset);
+    attachCloseListener();
+  }
+
+  async function refresh() {
+    allAssets = await loadAssets();
+    applyFilters();
+  }
+
+  searchEl.addEventListener('input', applyFilters);
+  filterKindEl.addEventListener('change', applyFilters);
+  sortKeyEl.addEventListener('change', applyFilters);
+
+  document.getElementById('btn-seed')!.addEventListener('click', async () => {
+    await seedLibrary();
+    await refresh();
+  });
+
+  document.getElementById('btn-clear')!.addEventListener('click', async () => {
+    await clearAssets();
+    selectedId = null;
+    renderDetailPanel(panel, null);
+    await refresh();
+  });
+
+  refresh();
+</script>

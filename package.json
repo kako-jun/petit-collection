@@ -1,0 +1,30 @@
+{
+  "name": "petit-collection",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Digital sticker book and stamp book — local-first",
+  "author": "kako-jun",
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "localforage": "^1.10.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.0",
+    "prettier": "^3.4.0",
+    "prettier-plugin-astro": "^0.14.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.4"
+  }
+}

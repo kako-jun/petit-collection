@@ -1,0 +1,32 @@
+---
+import Base from '@/layouts/Base.astro';
+---
+
+<Base title="Book" description="Arrange assets on pages">
+  <section class="book">
+    <h1>Book</h1>
+    <p class="subtitle">Place your collection on pages.</p>
+    <div id="book-info" class="book-info">
+      <!-- populated by book.ts -->
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { loadBook } from '@/lib/db';
+
+  async function refresh() {
+    const book = await loadBook();
+    const el = document.getElementById('book-info')!;
+    if (!book) {
+      el.textContent = 'No book yet. Add seed data in the Library first.';
+      return;
+    }
+    el.innerHTML = `
+      <p><strong>${book.title}</strong></p>
+      <p>${book.pages.length} page(s)</p>
+    `;
+  }
+
+  refresh();
+</script>

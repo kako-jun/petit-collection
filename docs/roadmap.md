@@ -10,6 +10,17 @@ Deliverables:
 - spec
 - issue breakdown
 
+## Phase 0.5: App shell ✓ (Issue #2, 2026-05-25)
+
+Deliverables:
+- Astro 5 + vanilla TypeScript app shell
+- `Library` and `Book` pages with nav
+- `localforage` (IndexedDB) persistence layer
+- seed data survives reloads
+- `src/lib/types.ts` — domain model (Asset / Book / Page / Placement)
+- `src/lib/db.ts` — loadAssets / saveAssets / loadBook / saveBook / seedLibrary
+- `src/lib/library.ts` — renderAssetGrid helper
+
 ## Phase 1: Core collection MVP
 
 Goal:

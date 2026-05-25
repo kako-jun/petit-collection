@@ -1,0 +1,32 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Digital sticker book and stamp book' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} — petit-collection</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <nav>
+        <a href="/" class="brand">petit-collection</a>
+        <a href="/library">Library</a>
+        <a href="/book">Book</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>
