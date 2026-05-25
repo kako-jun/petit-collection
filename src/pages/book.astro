@@ -24,6 +24,7 @@ import Base from '@/layouts/Base.astro';
 
     <div class="book-toolbar">
       <button id="btn-place" type="button">+ Place sticker</button>
+      <button id="btn-export" type="button">⬇ Export PNG</button>
     </div>
   </section>
 </Base>
@@ -32,6 +33,7 @@ import Base from '@/layouts/Base.astro';
   import { loadBook, addPage, loadAssets, saveAssets, saveBook, repairOwnershipState } from '@/lib/db';
   import { renderBook } from '@/lib/book';
   import { activateStickerPage, placeAsset } from '@/lib/sticker';
+  import { exportPageAsPng, safeFilename } from '@/lib/export';
   import type { Asset, Book } from '@/lib/types';
 
   let book: Book | null = null;
@@ -166,6 +168,23 @@ import Base from '@/layouts/Base.astro';
   document.getElementById('btn-place')!.addEventListener('click', openPicker);
   document.getElementById('picker-close')!.addEventListener('click', () => {
     picker.hidden = true;
+  });
+
+  document.getElementById('btn-export')!.addEventListener('click', async () => {
+    const surface = container.querySelector<HTMLElement>('.book-surface');
+    if (!surface) return;
+    const btn = document.getElementById('btn-export') as HTMLButtonElement;
+    const title = book ? safeFilename(book.title) : 'book';
+    const filename = `${title}-page${currentIndex + 1}.png`;
+    btn.disabled = true;
+    btn.textContent = 'Exporting…';
+    try {
+      const ok = await exportPageAsPng(surface, filename);
+      if (!ok) btn.textContent = '⬇ Export PNG (failed)';
+    } finally {
+      btn.disabled = false;
+      if (btn.textContent === 'Exporting…') btn.textContent = '⬇ Export PNG';
+    }
   });
 
   async function init() {
