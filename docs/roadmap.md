@@ -21,12 +21,14 @@ Deliverables:
 - `src/lib/db.ts` — loadAssets / saveAssets / loadBook / saveBook / seedLibrary
 - `src/lib/library.ts` — renderAssetGrid helper
 
-## Phase 1: Core collection MVP ✓ partial (Issues #3–#5, 2026-05-25)
+## Phase 1: Core collection MVP ✓ complete (Issues #3–#7, 2026-05-25)
 
 Implemented:
-- #3 Library asset grid with filter by kind, sort (recent/oldest/title), search, detail panel
-- #4 Book surface with page tabs, prev/next navigation, add page, IndexedDB persistence
-- #5 Sticker page: place from picker, drag to move, wheel to rotate (±30°), peel back to library
+- #3 Library asset grid with filter/sort/search/detail panel (XSS-safe)
+- #4 Book surface with page tabs, prev/next, add page, IndexedDB persistence
+- #5 Sticker page: place from picker, drag (pointercancel handled), wheel rotate ±30°, peel
+- #6 Ownership rules: dual guard in placeAsset, repairOwnershipState on load, is-placed UI
+- #7 PNG export: html2canvas, scale:2, ignoreElements, Firefox-compat, safeFilename
 
 Goal:
 - prove the library + book split
