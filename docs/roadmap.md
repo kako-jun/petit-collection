@@ -21,7 +21,12 @@ Deliverables:
 - `src/lib/db.ts` — loadAssets / saveAssets / loadBook / saveBook / seedLibrary
 - `src/lib/library.ts` — renderAssetGrid helper
 
-## Phase 1: Core collection MVP
+## Phase 1: Core collection MVP ✓ partial (Issues #3–#5, 2026-05-25)
+
+Implemented:
+- #3 Library asset grid with filter by kind, sort (recent/oldest/title), search, detail panel
+- #4 Book surface with page tabs, prev/next navigation, add page, IndexedDB persistence
+- #5 Sticker page: place from picker, drag to move, wheel to rotate (±30°), peel back to library
 
 Goal:
 - prove the library + book split
