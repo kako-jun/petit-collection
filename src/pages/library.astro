@@ -38,7 +38,7 @@ import Base from '@/layouts/Base.astro';
 </Base>
 
 <script>
-  import { seedLibrary, loadAssets, clearAssets } from '@/lib/db';
+  import { seedLibrary, loadAssets, clearAssets, loadBook, repairOwnershipState, saveAssets } from '@/lib/db';
   import { filterAndSort, renderAssetGrid, renderDetailPanel } from '@/lib/library';
   import type { Asset, AssetKind } from '@/lib/types';
   import type { SortKey } from '@/lib/library';
@@ -71,10 +71,14 @@ import Base from '@/layouts/Base.astro';
 
   function attachCardListeners() {
     grid.querySelectorAll<HTMLElement>('.asset-card').forEach((card) => {
-      card.addEventListener('click', () => openDetail(card.dataset.id!));
+      card.addEventListener('click', () => {
+        if (card.getAttribute('aria-disabled') === 'true') return;
+        openDetail(card.dataset.id!);
+      });
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
+          if (card.getAttribute('aria-disabled') === 'true') return;
           openDetail(card.dataset.id!);
         }
       });
@@ -97,6 +101,11 @@ import Base from '@/layouts/Base.astro';
 
   async function refresh() {
     allAssets = await loadAssets();
+    // Repair ghost ownershipState on load
+    const book = await loadBook();
+    if (repairOwnershipState(allAssets, book)) {
+      await saveAssets(allAssets);
+    }
     applyFilters();
   }
 

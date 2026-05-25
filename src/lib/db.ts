@@ -23,6 +23,31 @@ export async function clearAssets(): Promise<void> {
   await store.removeItem(ASSETS_KEY);
 }
 
+/**
+ * Repair ghost ownership states.
+ * An asset marked 'placed' but absent from all placements is reset to 'library'.
+ * An asset in placements but marked 'library' is corrected to 'placed'.
+ * Call this after loading both assets and book.
+ */
+export function repairOwnershipState(assets: Asset[], book: Book | null): boolean {
+  if (!book) return false;
+  const placedIds = new Set(
+    book.pages.flatMap((pg) => pg.placements.map((pl) => pl.assetId)),
+  );
+  let changed = false;
+  for (const asset of assets) {
+    if (asset.ownershipState === 'placed' && !placedIds.has(asset.id)) {
+      asset.ownershipState = 'library';
+      changed = true;
+    }
+    if (asset.ownershipState === 'library' && placedIds.has(asset.id)) {
+      asset.ownershipState = 'placed';
+      changed = true;
+    }
+  }
+  return changed;
+}
+
 // --- Book ---
 
 export async function loadBook(): Promise<Book | null> {

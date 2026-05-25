@@ -29,8 +29,14 @@ export function renderAssetGrid(container: HTMLElement, assets: Asset[]): void {
       const thumb = a.image
         ? `<img src="${esc(a.image)}" alt="${esc(a.title ?? '')}">`
         : '?';
+      const isPlaced = a.ownershipState === 'placed';
       return `
-        <div class="asset-card" data-id="${esc(a.id)}" tabindex="0" role="button" aria-label="${label}">
+        <div class="asset-card ${isPlaced ? 'is-placed' : ''}"
+             data-id="${esc(a.id)}"
+             tabindex="${isPlaced ? '-1' : '0'}"
+             role="button"
+             aria-label="${label}"
+             aria-disabled="${isPlaced}">
           <div class="asset-thumb ${esc(a.kind)}">${thumb}</div>
           <div class="asset-meta">
             <span class="asset-title">${label}</span>

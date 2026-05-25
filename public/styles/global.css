@@ -171,6 +171,18 @@ button:disabled {
   outline-offset: 1px;
 }
 
+.asset-card.is-placed {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.asset-card.is-placed:hover,
+.asset-card.is-placed:focus {
+  box-shadow: none;
+  outline: none;
+}
+
 .asset-thumb {
   height: 120px;
   display: flex;

@@ -202,7 +202,8 @@ function peelAsset(
 
 /**
  * Place an asset onto a page at the given position.
- * Enforces the one-instance rule: an asset already placed is rejected.
+ * Enforces the one-instance rule via both ownershipState and placement scan.
+ * Returns false if the asset is already placed anywhere.
  */
 export function placeAsset(
   asset: Asset,
@@ -211,6 +212,10 @@ export function placeAsset(
   x: number,
   y: number,
 ): boolean {
+  // Primary guard: ownershipState (fast path)
+  if (asset.ownershipState !== 'library') return false;
+
+  // Secondary guard: scan all pages for an existing placement (defensive)
   const alreadyPlaced = book.pages.some((pg) =>
     pg.placements.some((pl) => pl.assetId === asset.id),
   );

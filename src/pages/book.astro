@@ -29,7 +29,7 @@ import Base from '@/layouts/Base.astro';
 </Base>
 
 <script>
-  import { loadBook, addPage, loadAssets, saveAssets, saveBook } from '@/lib/db';
+  import { loadBook, addPage, loadAssets, saveAssets, saveBook, repairOwnershipState } from '@/lib/db';
   import { renderBook } from '@/lib/book';
   import { activateStickerPage, placeAsset } from '@/lib/sticker';
   import type { Asset, Book } from '@/lib/types';
@@ -170,6 +170,10 @@ import Base from '@/layouts/Base.astro';
 
   async function init() {
     [book, assets] = await Promise.all([loadBook(), loadAssets()]);
+    // Repair any ghost ownershipState from interrupted saves
+    if (repairOwnershipState(assets, book)) {
+      await saveAssets(assets);
+    }
     render();
   }
 
